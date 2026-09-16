@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>肖肖升本信息查询助手</title>
+<style>
+:root{
+    --primary:#24539a;--primary-dark:#193d76;--primary-soft:#eaf1fb;--green:#278a5b;--green-soft:#e8f7ef;
+    --orange:#c96d16;--orange-soft:#fff1e3;--purple:#7650a8;--purple-soft:#f1ebfa;--red:#d84b4b;
+    --text:#1d2939;--muted:#667085;--line:#e4e9f0;--surface:#fff;--page:#f4f7fb;--shadow:0 10px 28px rgba(28,50,86,.08);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{min-height:100vh;background:radial-gradient(circle at 10% 0%,rgba(36,83,154,.10),transparent 28rem),var(--page);color:var(--text);font-family:"Microsoft YaHei","PingFang SC",system-ui,-apple-system,sans-serif;padding:16px;line-height:1.65}
+button,input,select{font:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid rgba(36,83,154,.24);outline-offset:2px}
+.container{width:min(100%,980px);margin:0 auto}
+.hero{position:relative;overflow:hidden;padding:26px;border-radius:20px;color:#fff;background:linear-gradient(135deg,#173c77 0%,#245aa8 58%,#3f77c9 100%);box-shadow:0 16px 40px rgba(24,56,108,.22);margin-bottom:16px}
+.hero::after{content:"";position:absolute;width:210px;height:210px;border:34px solid rgba(255,255,255,.09);border-radius:50%;right:-60px;top:-90px}
+.hero-kicker{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:rgba(255,255,255,.14);font-size:13px;margin-bottom:12px}
+.hero h1{font-size:clamp(22px,4vw,30px);line-height:1.35;margin-bottom:8px}
+.hero p{max-width:700px;font-size:14px;color:rgba(255,255,255,.9)}
+.data-note{display:flex;align-items:flex-start;gap:8px;margin-top:16px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.12);font-size:13px;color:rgba(255,255,255,.94)}
+.nav-tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-bottom:16px}
+.tab-button{position:relative;min-height:48px;padding:9px 10px;border:1px solid #dbe3ee;border-radius:12px;background:#fff;color:var(--primary);font-weight:700;box-shadow:0 3px 10px rgba(28,50,86,.045);transition:.2s ease}
+.tab-button:hover{border-color:#9eb5d8;transform:translateY(-1px)}
+.tab-button.active{border-color:var(--primary);background:var(--primary);color:#fff;box-shadow:0 8px 18px rgba(36,83,154,.20)}
+.tab-count{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;margin-left:4px;border-radius:999px;background:rgba(255,255,255,.22);font-size:12px}
+.tab-button:not(.active) .tab-count{background:var(--primary-soft)}
+.page{display:none}
+.page.active{display:block;animation:fadeIn .22s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.card{background:var(--surface);border:1px solid rgba(220,228,239,.85);border-radius:16px;padding:20px;box-shadow:var(--shadow);margin-bottom:16px}
+.card h2,.card h3{line-height:1.4}
+.card h2{font-size:20px;margin-bottom:5px}
+.card h3{font-size:18px;margin-bottom:8px}
+.section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:16px}
+.section-head p,.muted{color:var(--muted);font-size:13px}
+.controls{display:grid;grid-template-columns:1fr 1.15fr 1.1fr auto;gap:12px;align-items:end}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field label{font-size:13px;font-weight:700;color:#4a5872}
+input,select{width:100%;min-height:44px;border:1px solid #cfd8e5;border-radius:10px;background:#fff;color:var(--text);padding:9px 11px}
+input:hover,select:hover{border-color:#9eb1ca}
+.control-actions{display:flex;gap:8px}
+.btn{min-height:42px;border:1px solid transparent;border-radius:10px;padding:9px 15px;font-weight:700;transition:.18s ease;white-space:nowrap}
+.btn:hover{transform:translateY(-1px)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-dark)}
+.btn-secondary{background:#fff;color:var(--primary);border-color:#b8c8df}
+.btn-secondary:hover{background:var(--primary-soft)}
+.btn-danger{background:#fff;color:var(--red);border-color:#f0b9b9}
+.btn-danger:hover{background:#fff4f4}
+.btn-small{min-height:34px;padding:6px 10px;font-size:13px;border-radius:8px}
+.tips{margin-top:14px;padding:12px 14px;border-radius:10px;background:var(--orange-soft);color:#7b4a18;border:1px solid #f4d4ae;font-size:13px}.results{display:block}
+.result-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 15px;margin-bottom:12px;border-radius:12px;background:var(--primary-soft);color:#294a7b;font-size:14px}
+.result-list{display:grid;gap:12px}
+.result-card{padding:17px;border:1px solid var(--line);border-radius:14px;background:#fff;transition:.18s ease}
+.result-card:hover{border-color:#b9c9df;box-shadow:0 8px 20px rgba(31,56,95,.07)}
+.result-card.focus{border-left:4px solid var(--green)}
+.result-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:10px}
+.school-name{font-size:17px;line-height:1.4;margin-top:5px}
+.tag{display:inline-flex;align-items:center;padding:3px 8px;border-radius:999px;font-size:12px;font-weight:700}
+.tag-zikao{background:var(--green-soft);color:var(--green)}
+.tag-chengkao{background:var(--orange-soft);color:var(--orange)}
+.tag-open{background:var(--purple-soft);color:var(--purple)}
+.tag-focus{background:#e9f7ef;color:#24724e;margin-left:6px}
+.meta-row{display:grid;gap:6px;font-size:14px;color:#3d4b61}
+.meta-row strong{color:#1f2d42}
+.card-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.btn-official{background:#eef4ff;color:var(--primary);border-color:#b9cce8;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}.btn-official:hover{background:#dfeafb}.official-note{margin-top:10px;padding-top:9px;border-top:1px dashed #dfe6f0;color:var(--muted);font-size:12px}.favorite-btn{background:#fff;border-color:#e2a6a6;color:#b94141}
+.favorite-btn.saved{background:#fff1f1;border-color:#e2a6a6;color:#b94141}
+.empty-state{padding:34px 16px;text-align:center;border:1px dashed #ccd7e6;border-radius:12px;color:var(--muted);background:#fafcff}
+.empty-icon{display:block;font-size:28px;margin-bottom:6px}
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+table{width:100%;min-width:680px;border-collapse:collapse;font-size:14px}
+th,td{padding:11px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:#f2f6fc;color:#334867;font-weight:700}
+tr:last-child td{border-bottom:0}
+.checklist-progress{padding:14px;margin-bottom:16px;border-radius:12px;background:#f7faff;border:1px solid #dfe8f5}
+.progress-head{display:flex;justify-content:space-between;gap:10px;font-size:14px;margin-bottom:8px}
+.progress-track{height:9px;border-radius:999px;background:#e1e8f2;overflow:hidden}
+.progress-bar{height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,#4e8bd7,#2eaa70);transition:width .25s ease}
+.check-group{margin-top:18px}
+.check-group:first-child{margin-top:0}
+.check-group h3{display:flex;align-items:center;gap:7px;font-size:16px;margin-bottom:7px}
+.check-item{display:flex;align-items:flex-start;gap:10px;padding:10px 4px;border-bottom:1px solid #eef2f6;color:#3a485e;font-size:14px;cursor:pointer}
+.check-item:last-child{border-bottom:0}
+.check-item input{width:19px;height:19px;min-height:19px;margin-top:3px;accent-color:var(--green);flex:0 0 auto}
+.check-item span{flex:1}
+.check-item.done span{color:#7d8796;text-decoration:line-through}
+.favorite-count{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:26px;padding:0 8px;border-radius:999px;background:var(--primary-soft);color:var(--primary);font-size:13px}
+.next-exam{padding:20px;border-radius:15px;color:#fff;background:linear-gradient(135deg,#24539a,#3578c8);margin-bottom:14px}
+.next-exam-label{font-size:14px;opacity:.9}
+.next-exam-name{font-size:18px;font-weight:700;margin:3px 0 8px}
+.countdown-value{font-size:clamp(23px,5vw,34px);font-weight:800;letter-spacing:.4px}
+.countdown-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.count-card{padding:14px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.count-card-name{font-size:14px;font-weight:700;margin-bottom:3px}
+.count-card-date{font-size:12px;color:var(--muted);margin-bottom:8px}
+.count-card-value{font-size:16px;font-weight:800;color:var(--primary)}
+.date-settings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.date-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+footer{padding:8px 4px 24px;color:var(--muted);text-align:center;font-size:12px}
+footer a{color:var(--primary);text-decoration:none}
+footer a:hover{text-decoration:underline}
+.toast{position:fixed;z-index:9999;left:50%;bottom:24px;max-width:calc(100% - 32px);padding:10px 15px;border-radius:10px;color:#fff;background:#26384f;box-shadow:0 12px 28px rgba(22,36,58,.25);opacity:0;visibility:hidden;transform:translate(-50%,12px);transition:.22s ease;font-size:14px}
+.toast.show{opacity:1;visibility:visible;transform:translate(-50%,0)}
+.toast.success{background:#24724e}
+.toast.error{background:#b33a3a}
+@media (max-width:820px){.nav-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}.controls{grid-template-columns:1fr 1fr}.control-actions{grid-column:1/-1}}
+@media (max-width:620px){body{padding:10px}.hero{padding:20px;border-radius:16px}.nav-tabs{grid-template-columns:1fr 1fr}.tab-button{min-height:44px}.controls,.date-settings,.countdown-grid{grid-template-columns:1fr}.control-actions{display:grid;grid-template-columns:1fr 1fr}.section-head,.result-card-head,.result-summary{align-items:stretch;flex-direction:column}.result-summary{gap:4px}.card{padding:16px;border-radius:14px}.btn{width:100%}.result-card-head .btn{width:auto;align-self:flex-start}}
+</style>
+<meta name="theme-color" content="#24539a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="肖肖升本">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<script src="pwa-mobile.js" defer></script>
+</head>
+<body>
+<div class="container">
+<header class="hero">
+<div class="hero-kicker">🎓 贵州地区 · 护理专科升本科参考工具</div>
+<h1>肖肖升本信息查询助手</h1>
+<p>集中查询自考本科、成人本科和开放教育信息，比较报考方式，跟踪材料准备与考试倒计时。</p>
+<div class="data-note"><span>ℹ️</span><span>数据与官方入口核验：2026-09-16。招生专业、报考条件和考试安排可能调整，请以贵州省招生考试院及院校继续教育学院当年官方通知为准。</span></div>
+</header>
+<nav class="nav-tabs" aria-label="功能导航">
+<button class="tab-button active" type="button" data-page="searchPage">院校查询</button>
+<button class="tab-button" type="button" data-page="comparePage">自考 vs 成考</button>
+<button class="tab-button" type="button" data-page="materialPage">材料清单</button>
+<button class="tab-button" type="button" data-page="collectPage">我的收藏 <span class="tab-count" id="favTabCount">0</span></button>
+<button class="tab-button" type="button" data-page="countPage">考试倒计时</button>
+</nav>
+<main>
+<section id="searchPage" class="page active" aria-labelledby="searchTitle">
+<div class="card">
+<div class="section-head"><div><h2 id="searchTitle">院校与专业查询</h2><p>可按考试类型、院校和专业关键词组合筛选；输入框留空即可查看全部参考数据。</p></div></div>
+<div class="controls">
+<div class="field"><label for="examType">考试类型</label><select id="examType"><option value="">全部类型</option><option value="zikao">自考本科</option><option value="chengkao">成人本科</option><option value="open">开放教育本科</option></select></div>
+<div class="field"><label for="schoolSelect">目标院校</label><select id="schoolSelect"><option value="">全部院校</option></select></div>
+<div class="field"><label for="keyword">专业关键词</label><input id="keyword" type="search" placeholder="例如：护理学" autocomplete="off"></div>
+<div class="control-actions"><button class="btn btn-primary" id="searchBtn" type="button">开始查询</button><button class="btn btn-secondary" id="resetBtn" type="button">重置</button></div>
+</div>
+<div class="tips">💡 护理专科背景可优先关注“护理学”结果。自考没有入学考试；成人本科需要参加成人高考；开放教育属于另一招生体系。</div>
+</div>
+<div id="resultBox" class="card results" aria-live="polite"></div>
+</section><section id="comparePage" class="page" aria-labelledby="compareTitle">
+<div class="card">
+<div class="section-head"><div><h2 id="compareTitle">自考本科 VS 成人本科</h2><p>两种学历均属于国家承认的非全日制学历，具体报考要求以当年政策为准。</p></div></div>
+<div class="table-wrap"><table><thead><tr><th>对比项</th><th>自考本科</th><th>成人本科（成考）</th></tr></thead><tbody>
+<tr><td>入学方式</td><td>无入学考试，完成专业计划规定的课程后申请毕业</td><td>参加全国成人高考，达到录取要求后入学</td></tr>
+<tr><td>学习节奏</td><td>无固定学制，考试进度取决于个人安排</td><td>通常固定学制，按学校教学计划学习</td></tr>
+<tr><td>难度特点</td><td>统考科目较多，需要持续学习和自律</td><td>入学考试相对基础，录取后按教学安排完成课程</td></tr>
+<tr><td>费用构成</td><td>考试报名费、教材费、实践考核费等</td><td>学费按学年或学校规定缴纳，另有报名考试费用</td></tr>
+<tr><td>学历证明</td><td>自考毕业证书，符合条件可申请学士学位</td><td>成人高等教育毕业证书，符合条件可申请学士学位</td></tr>
+<tr><td>护理专业提示</td><td>通常要求护理相关专科背景并完成实践环节</td><td>护理学专业通常审核护士执业资格及相关背景</td></tr>
+<tr><td>适合人群</td><td>学习自律强、希望灵活安排考试进度的人</td><td>在职、时间相对固定、希望按学校计划完成学业的人</td></tr>
+</tbody></table></div>
+<div class="tips">✅ 学历用途、考研和职业资格考试资格需以具体招考单位的最新要求为准，不能仅依据“非全日制本科”一项判断。</div>
+</div>
+</section>
+<section id="materialPage" class="page" aria-labelledby="materialTitle">
+<div class="card">
+<div class="section-head"><div><h2 id="materialTitle">护理学本科报考材料清单</h2><p>勾选状态会保存在当前浏览器中，关闭页面后再次打开仍会保留。</p></div><button class="btn btn-danger btn-small" id="clearChecklistBtn" type="button">清除勾选</button></div>
+<div class="tips">⚠️ 医学类专业审核通常较严格。不同院校、教学点和报考方式的要求可能不同，请务必对照当年招生简章准备原件与扫描件。</div>
+<div class="checklist-progress"><div class="progress-head"><span>准备进度</span><strong id="progressText">0 / 0</strong></div><div class="progress-track" aria-hidden="true"><div class="progress-bar" id="progressBar"></div></div></div>
+<div id="checklist"></div>
+</div>
+</section>
+<section id="collectPage" class="page" aria-labelledby="collectTitle">
+<div class="card">
+<div class="section-head"><div><h2 id="collectTitle">我的收藏 <span class="favorite-count" id="favoriteCount">0</span></h2><p>收藏只保存在当前浏览器，不会上传到网络。</p></div><button class="btn btn-danger btn-small" id="clearFavoritesBtn" type="button">清空收藏</button></div>
+<div id="favoriteList"></div>
+</div>
+</section>
+<section id="countPage" class="page" aria-labelledby="countTitle">
+<div class="card">
+<div class="section-head"><div><h2 id="countTitle">考试倒计时</h2><p>默认日期为参考日程，请根据官方公告修改；修改后会自动保存在当前浏览器。</p></div></div>
+<div id="nextExamBox"></div><div class="countdown-grid" id="examCountdowns"></div>
+</div>
+<div class="card">
+<div class="section-head"><div><h3>修改参考考试日期</h3><p>倒计时按北京时间 09:00 计算。</p></div></div>
+<div class="date-settings" id="dateSettings"></div>
+<div class="date-actions"><button class="btn btn-primary" id="saveDatesBtn" type="button">保存日期</button><button class="btn btn-secondary" id="resetDatesBtn" type="button">恢复默认参考日期</button></div>
+</div>
+</section>
+</main>
+<footer>官方信息入口：<a href="https://zsksy.guizhou.gov.cn/" target="_blank" rel="noopener">贵州省招生考试院</a> · <a href="https://jyt.guizhou.gov.cn/" target="_blank" rel="noopener">贵州省教育厅</a> · <a href="https://www.chsi.com.cn/" target="_blank" rel="noopener">中国高等教育学生信息网</a></footer>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+"use strict";
+const APP_DATA = [
+  {
+    "school": "贵州医科大学",
+    "type": "zikao",
+    "typeName": "自考本科",
+    "major": "护理学",
+    "condition": "专科及以上学历可报考，申请本科毕业前需取得专科毕业证；完成专业计划课程、毕业论文和实践考核",
+    "note": "无入学考试，每年通常有4月和10月统考；适合自律性较强的考生",
+    "officialUrl": "https://cjxy.gmc.edu.cn/xwgg111/zkxx.htm",
+    "officialLabel": "自考招考信息",
+    "officialSource": "学校官网",
+    "officialCheckedAt": "2026-09-16",
+    "comparison": {
+      "fee": "考试报名费、教材/助学及实践论文费用；是否参加助学班及具体收费以学校或助学点公示为准",
+      "duration": "无固定学制；通常 2-3 年考完，进度取决于课程考试安排",
+      "entry": "免入学考试；取得考籍后参加专业计划课程统考",
+      "learning": "以自学为主，可结合学校或助学平台的网络助学；实践、论文按主考院校安排",
+      "management": "省自考委及主考院校负责考试与毕业审核，学校继续教育学院提供助学和考务服务",
+      "exams": "统考一般安排在 4 月、10 月；实践环节、论文答辩时间由主考院校通知",
+      "degree": "完成专业计划、毕业论文等要求，符合课程成绩和学位条件后可申请，具体以学校学位办法为准"
+    }
+  },
+  {
+    "school": "贵州医科大学",
+    "type": "chengkao",
+    "typeName": "成人本科",
+    "major": "护理学",
+    "condition": "护理专科毕业，通常需提供护士执业资格证明；参加成人高考并被录取",
+    "note": "学制通常为2.5年，以学校继续教育学院安排为准",
+    "officialUrl": "https://cjxy.gmc.edu.cn/xwgg11/zkxx.htm",
+    "officialLabel": "成教招考信息",
+    "officialSource": "学校官网",
+    "officialCheckedAt": "2026-09-16",
+    "comparison": {
+      "fee": "按学年或学校收费公示缴纳学费，各校各专业标准不同；报名考试费和教材费另计",
+      "duration": "通常 2.5 年，最终以学校学籍管理和培养方案为准",
+      "entry": "参加全国成人高考，达到录取要求后办理入学",
+      "learning": "通常采用函授、业余或线上平台学习，部分课程可能安排线下教学或考试",
+      "management": "学校继续教育学院统一负责学籍、教学、考试和毕业管理",
+      "exams": "成人高考每年一次；录取后按学校课程计划参加期末或课程考核",
+      "degree": "完成课程、论文等要求并符合学校学位条件后可申请，具体以学位办法为准"
+    }
+  },
+  {
+    "school": "遵义医科大学",
+    "type": "zikao",
+    "typeName": "自考本科",
+    "major": "护理学",
+    "condition": "专科在读或已毕业可了解报考，申请本科毕业时需核验专科毕业证",
+    "note": "护理自考科目通常较多，包含临床实践或相关考核要求",
+    "officialUrl": "https://sfea.zmu.edu.cn/zhaosheng_list.jsp?urltype=tree.TreeTempUrl&wbtreeid=1043",
+    "officialLabel": "招生信息",
+    "officialSource": "学校官网",
+    "officialCheckedAt": "2026-09-16",
+    "comparison": {
+      "fee": "考试报名费、教材/助学及实践论文费用；是否参加助学班及具体收费以学校或助学点公示为准",
+      "duration": "无固定学制；通常 2-3 年考完，进度取决于课程考试安排",
+      "entry": "免入学考试；取得考籍后参加专业计划课程统考",
+      "learning": "以自学为主，可结合学校或助学平台的网络助学；实践、论文按主考院校安排",
+      "management": "省自考委及主考院校负责考试与毕业审核，学校继续教育学院提供助学和考务服务",
+      "exams": "统考一般安排在 4 月、10 月；实践环节、论文答辩时间由主考院校通知",
+      "degree": "完成专业计划、毕业论文等要求，符合课程成绩和学位条件后可申请，具体以学校学位办法为准"
+    }
+  },
+  {
+    "school": "遵义医科大学",
+    "type": "chengkao",
+    "typeName": "成人本科",
+    "major": "护理学",
+    "condition": "护理专科背景，通常要求护士执业资格证明",
+    "note": "成人高考录取后按学校教学计划学习，适合在职人员",
+    "officialUrl": "https://sfea.zmu.edu.cn/zhaosheng_list.jsp?urltype=tree.TreeTempUrl&wbtreeid=1043",
+    "officialLabel": "招生信息",
+    "officialSource": "学校官网",
+    "officialCheckedAt": "2026-09-16",
+    "comparison": {
+      "fee": "按学年或学校收费公示缴纳学费，各校各专业标准不同；报名考试费和教材费另计",
+      "duration": "通常 2.5 年，最终以学校学籍管理和培养方案为准",
+      "entry": "参加全国成人高考，达到录取要求后办理入学",
+      "learning": "通常采用函授、业余或线上平台学习，部分课程可能安排线下教学或考试",
+      "management": "学校继续教育学院统一负责学籍、教学、考试和毕业管理",
+      "exams": "成人高考每年一次；录取后按学校课程计划参加期末或课程考核",
+      "degree": "完成课程、论文等要求并符合学校学位条件后可申请，具体以学位办法为准"
+    }
+  },
+  {
+    "school": "贵州中医药大学",
+    "type": "chengkao",
+    "typeName": "成人本科",
+    "major": "护理学",
+    "condition": "护理专科毕业，部分教学点可能要求护士执业证",
+    "note": "同时可能开设中医学、中药学等专业，跨专业报考条件需单独核实",
+    "officialUrl": "https://jxjy.gzy.edu.cn/crxljy.htm",
+    "officialLabel": "成人学历教育",
+    "officialSource": "学校官网",
+    "officialCheckedAt": "2026-09-16",
+    "comparison": {
+      "fee": "按学年或学校收费公示缴纳学费，各校各专业标准不同；报名考试费和教材费另计",
+      "duration": "通常 2.5 年，最终以学校学籍管理和培养方案为准",
+      "entry": "参加全国成人高考，达到录取要求后办理入学",
+      "learning": "通常采用函授、业余或线上平台学习，部分课程可能安排线下教学或考试",
+      "management": "学校继续教育学院统一负责学籍、教学、考试和毕业管理",
+      "exams": "成人高考每年一次；录取后按学校课程计划参加期末或课程考核",
+      "degree": "完成课程、论文等要求并符合学校学位条件后可申请，具体以学位办法为准"
+    }
+  },
+  {
+    "school": "贵州大学",
+    "type": "chengkao",
+    "typeName": "成人本科",
+    "major": "行政管理、法学等",
+    "condition": "专科毕业通常可报考，具体前置专业要求以简章为准",
+    "note": "参考信息显示护理学不是该校当前主要成人本科招生方向",
+    "officialUrl": "https://cce.gzu.edu.cn/xljy/list.htm",
+    "officialLabel": "学历教育信息",
+    "officialSource": "学校官网",
+    "officialCheckedAt": "2026-09-16",
+    "comparison": {
+      "fee": "按学年或学校收费公示缴纳学费，各校各专业标准不同；报名考试费和教材费另计",
+      "duration": "通常 2.5 年，最终以学校学籍管理和培养方案为准",
+      "entry": "参加全国成人高考，达到录取要求后办理入学",
+      "learning": "通常采用函授、业余或线上平台学习，部分课程可能安排线下教学或考试",
+      "management": "学校继续教育学院统一负责学籍、教学、考试和毕业管理",
+      "exams": "成人高考每年一次；录取后按学校课程计划参加期末或课程考核",
+      "degree": "完成课程、论文等要求并符合学校学位条件后可申请，具体以学位办法为准"
+    }
+  },
+  {
+    "school": "贵州师范大学",
+    "type": "chengkao",
+    "typeName": "成人本科",
+    "major": "学前教育、汉语言文学等",
+    "condition": "专科毕业通常可报考，具体以当年招生简章为准",
+    "note": "师范类成人本科方向较多，护理相关专业需以当年简章为准",
+    "officialUrl": "https://jxjyxy.gznu.edu.cn/crgk.htm",
+    "officialLabel": "成人高考",
+    "officialSource": "学校官网",
+    "officialCheckedAt": "2026-09-16",
+    "comparison": {
+      "fee": "按学年或学校收费公示缴纳学费，各校各专业标准不同；报名考试费和教材费另计",
+      "duration": "通常 2.5 年，最终以学校学籍管理和培养方案为准",
+      "entry": "参加全国成人高考，达到录取要求后办理入学",
+      "learning": "通常采用函授、业余或线上平台学习，部分课程可能安排线下教学或考试",
+      "management": "学校继续教育学院统一负责学籍、教学、考试和毕业管理",
+      "exams": "成人高考每年一次；录取后按学校课程计划参加期末或课程考核",
+      "degree": "完成课程、论文等要求并符合学校学位条件后可申请，具体以学位办法为准"
+    }
+  },
+  {
+    "school": "黔南民族师范学院",
+    "type": "chengkao",
+    "typeName": "成人本科",
+    "major": "汉语言文学、小学教育等",
+    "condition": "专科毕业通常可报考，具体以当年招生简章为准",
+    "note": "师范类院校，医学类专业设置请查看最新招生简章",
+    "officialUrl": "https://jjxy.sgmtu.edu.cn/crjy.htm",
+    "officialLabel": "成人教育",
+    "officialSource": "学校官网",
+    "officialCheckedAt": "2026-09-16",
+    "comparison": {
+      "fee": "按学年或学校收费公示缴纳学费，各校各专业标准不同；报名考试费和教材费另计",
+      "duration": "通常 2.5 年，最终以学校学籍管理和培养方案为准",
+      "entry": "参加全国成人高考，达到录取要求后办理入学",
+      "learning": "通常采用函授、业余或线上平台学习，部分课程可能安排线下教学或考试",
+      "management": "学校继续教育学院统一负责学籍、教学、考试和毕业管理",
+      "exams": "成人高考每年一次；录取后按学校课程计划参加期末或课程考核",
+      "degree": "完成课程、论文等要求并符合学校学位条件后可申请，具体以学位办法为准"
+    }
+  },
+  {
+    "school": "贵州理工学院",
+    "type": "chengkao",
+    "typeName": "成人本科",
+    "major": "工程管理、土木工程等",
+    "condition": "专科毕业通常可报考，具体以当年招生简章为准",
+    "note": "理工类院校，医学相关成人本科方向请以最新简章为准",
+    "officialUrl": "https://www.git.edu.cn/cjc/xljy/crgk.htm",
+    "officialLabel": "成人高考",
+    "officialSource": "学校官网",
+    "officialCheckedAt": "2026-09-16",
+    "comparison": {
+      "fee": "按学年或学校收费公示缴纳学费，各校各专业标准不同；报名考试费和教材费另计",
+      "duration": "通常 2.5 年，最终以学校学籍管理和培养方案为准",
+      "entry": "参加全国成人高考，达到录取要求后办理入学",
+      "learning": "通常采用函授、业余或线上平台学习，部分课程可能安排线下教学或考试",
+      "management": "学校继续教育学院统一负责学籍、教学、考试和毕业管理",
+      "exams": "成人高考每年一次；录取后按学校课程计划参加期末或课程考核",
+      "degree": "完成课程、论文等要求并符合学校学位条件后可申请，具体以学位办法为准"
+    }
+  },
+  {
+    "school": "贵州民族大学",
+    "type": "chengkao",
+    "typeName": "成人本科",
+    "major": "法学、社会工作等",
+    "condition": "专科毕业通常可报考，具体以当年招生简章为准",
+    "note": "以学校继续教育学院公布的招生专业为准",
+    "officialUrl": "https://gzxy.gzmu.edu.cn/xljy",
+    "officialLabel": "学历教育",
+    "officialSource": "学校官网",
+    "officialCheckedAt": "2026-09-16",
+    "comparison": {
+      "fee": "按学年或学校收费公示缴纳学费，各校各专业标准不同；报名考试费和教材费另计",
+      "duration": "通常 2.5 年，最终以学校学籍管理和培养方案为准",
+      "entry": "参加全国成人高考，达到录取要求后办理入学",
+      "learning": "通常采用函授、业余或线上平台学习，部分课程可能安排线下教学或考试",
+      "management": "学校继续教育学院统一负责学籍、教学、考试和毕业管理",
+      "exams": "成人高考每年一次；录取后按学校课程计划参加期末或课程考核",
+      "degree": "完成课程、论文等要求并符合学校学位条件后可申请，具体以学位办法为准"
+    }
+  },
+  {
+    "school": "贵州财经大学",
+    "type": "chengkao",
+    "typeName": "成人本科",
+    "major": "会计学、工商管理等",
+    "condition": "专科毕业通常可报考，具体以当年招生简章为准",
+    "note": "财经类院校，医学相关专业需单独核实",
+    "officialUrl": "https://jxjy.gufe.edu.cn/crjy/zsgz.htm",
+    "officialLabel": "招生工作",
+    "officialSource": "学校官网",
+    "officialCheckedAt": "2026-09-16",
+    "comparison": {
+      "fee": "按学年或学校收费公示缴纳学费，各校各专业标准不同；报名考试费和教材费另计",
+      "duration": "通常 2.5 年，最终以学校学籍管理和培养方案为准",
+      "entry": "参加全国成人高考，达到录取要求后办理入学",
+      "learning": "通常采用函授、业余或线上平台学习，部分课程可能安排线下教学或考试",
+      "management": "学校继续教育学院统一负责学籍、教学、考试和毕业管理",
+      "exams": "成人高考每年一次；录取后按学校课程计划参加期末或课程考核",
+      "degree": "完成课程、论文等要求并符合学校学位条件后可申请，具体以学位办法为准"
+    }
+  },
+  {
+    "school": "贵阳学院",
+    "type": "chengkao",
+    "typeName": "成人本科",
+    "major": "汉语言文学、学前教育等",
+    "condition": "专科毕业通常可报考，具体以当年招生简章为准",
+    "note": "综合类院校，招生专业以继续教育学院公告为准",
+    "officialUrl": "https://jjy.gyu.edu.cn/crjy/zsxx.htm",
+    "officialLabel": "成教招生信息",
+    "officialSource": "学校官网",
+    "officialCheckedAt": "2026-09-16",
+    "comparison": {
+      "fee": "按学年或学校收费公示缴纳学费，各校各专业标准不同；报名考试费和教材费另计",
+      "duration": "通常 2.5 年，最终以学校学籍管理和培养方案为准",
+      "entry": "参加全国成人高考，达到录取要求后办理入学",
+      "learning": "通常采用函授、业余或线上平台学习，部分课程可能安排线下教学或考试",
+      "management": "学校继续教育学院统一负责学籍、教学、考试和毕业管理",
+      "exams": "成人高考每年一次；录取后按学校课程计划参加期末或课程考核",
+      "degree": "完成课程、论文等要求并符合学校学位条件后可申请，具体以学位办法为准"
+    }
+  },
+  {
+    "school": "贵州工程应用技术学院",
+    "type": "chengkao",
+    "typeName": "成人本科",
+    "major": "汉语言文学、土木工程等",
+    "condition": "专科毕业通常可报考，具体以当年招生简章为准",
+    "note": "招生专业和教学点请以学校最新简章为准",
+    "officialUrl": "https://www.gues.edu.cn/jxjy/content.jsp?urltype=news.NewsContentUrl&wbtreeid=1034&wbnewsid=1621",
+    "officialLabel": "2026招生简章",
+    "officialSource": "学校官网",
+    "officialCheckedAt": "2026-09-16",
+    "comparison": {
+      "fee": "按学年或学校收费公示缴纳学费，各校各专业标准不同；报名考试费和教材费另计",
+      "duration": "通常 2.5 年，最终以学校学籍管理和培养方案为准",
+      "entry": "参加全国成人高考，达到录取要求后办理入学",
+      "learning": "通常采用函授、业余或线上平台学习，部分课程可能安排线下教学或考试",
+      "management": "学校继续教育学院统一负责学籍、教学、考试和毕业管理",
+      "exams": "成人高考每年一次；录取后按学校课程计划参加期末或课程考核",
+      "degree": "完成课程、论文等要求并符合学校学位条件后可申请，具体以学位办法为准"
+    }
+  },
+  {
+    "school": "铜仁学院",
+    "type": "chengkao",
+    "typeName": "成人本科",
+    "major": "汉语言文学、学前教育等",
+    "condition": "专科毕业通常可报考，具体以当年招生简章为准",
+    "note": "医学相关专业设置需以最新招生简章为准",
+    "officialUrl": "https://www.gztrc.edu.cn/jxxy/info/1016/6411.htm",
+    "officialLabel": "2026招生简章",
+    "officialSource": "学校官网",
+    "officialCheckedAt": "2026-09-16",
+    "comparison": {
+      "fee": "按学年或学校收费公示缴纳学费，各校各专业标准不同；报名考试费和教材费另计",
+      "duration": "通常 2.5 年，最终以学校学籍管理和培养方案为准",
+      "entry": "参加全国成人高考，达到录取要求后办理入学",
+      "learning": "通常采用函授、业余或线上平台学习，部分课程可能安排线下教学或考试",
+      "management": "学校继续教育学院统一负责学籍、教学、考试和毕业管理",
+      "exams": "成人高考每年一次；录取后按学校课程计划参加期末或课程考核",
+      "degree": "完成课程、论文等要求并符合学校学位条件后可申请，具体以学位办法为准"
+    }
+  },
+  {
+    "school": "安顺学院",
+    "type": "chengkao",
+    "typeName": "成人本科",
+    "major": "汉语言文学、学前教育等",
+    "condition": "专科毕业通常可报考，具体以当年招生简章为准",
+    "note": "护理相关成人本科方向需以最新招生简章为准",
+    "officialUrl": "https://crjyb.asu.edu.cn/ywgz/xljy.htm",
+    "officialLabel": "学历教育",
+    "officialSource": "学校官网",
+    "officialCheckedAt": "2026-09-16",
+    "comparison": {
+      "fee": "按学年或学校收费公示缴纳学费，各校各专业标准不同；报名考试费和教材费另计",
+      "duration": "通常 2.5 年，最终以学校学籍管理和培养方案为准",
+      "entry": "参加全国成人高考，达到录取要求后办理入学",
+      "learning": "通常采用函授、业余或线上平台学习，部分课程可能安排线下教学或考试",
+      "management": "学校继续教育学院统一负责学籍、教学、考试和毕业管理",
+      "exams": "成人高考每年一次；录取后按学校课程计划参加期末或课程考核",
+      "degree": "完成课程、论文等要求并符合学校学位条件后可申请，具体以学位办法为准"
+    }
+  },
+  {
+    "school": "六盘水师范学院",
+    "type": "chengkao",
+    "typeName": "成人本科",
+    "major": "汉语言文学、学前教育等",
+    "condition": "专科毕业通常可报考，具体以当年招生简章为准",
+    "note": "师范类院校，招生专业以继续教育学院公告为准",
+    "officialUrl": "https://www.lpssy.edu.cn/crjyb/crgk/list.htm",
+    "officialLabel": "成人高考",
+    "officialSource": "学校官网",
+    "officialCheckedAt": "2026-09-16",
+    "comparison": {
+      "fee": "按学年或学校收费公示缴纳学费，各校各专业标准不同；报名考试费和教材费另计",
+      "duration": "通常 2.5 年，最终以学校学籍管理和培养方案为准",
+      "entry": "参加全国成人高考，达到录取要求后办理入学",
+      "learning": "通常采用函授、业余或线上平台学习，部分课程可能安排线下教学或考试",
+      "management": "学校继续教育学院统一负责学籍、教学、考试和毕业管理",
+      "exams": "成人高考每年一次；录取后按学校课程计划参加期末或课程考核",
+      "degree": "完成课程、论文等要求并符合学校学位条件后可申请，具体以学位办法为准"
+    }
+  },
+  {
+    "school": "遵义师范学院",
+    "type": "chengkao",
+    "typeName": "成人本科",
+    "major": "汉语言文学、小学教育等",
+    "condition": "专科毕业通常可报考，具体以当年招生简章为准",
+    "note": "护理相关专业设置需以最新招生简章为准",
+    "officialUrl": "https://www.zync.edu.cn/cjc/zslq.htm",
+    "officialLabel": "招生录取",
+    "officialSource": "学校官网",
+    "officialCheckedAt": "2026-09-16",
+    "comparison": {
+      "fee": "按学年或学校收费公示缴纳学费，各校各专业标准不同；报名考试费和教材费另计",
+      "duration": "通常 2.5 年，最终以学校学籍管理和培养方案为准",
+      "entry": "参加全国成人高考，达到录取要求后办理入学",
+      "learning": "通常采用函授、业余或线上平台学习，部分课程可能安排线下教学或考试",
+      "management": "学校继续教育学院统一负责学籍、教学、考试和毕业管理",
+      "exams": "成人高考每年一次；录取后按学校课程计划参加期末或课程考核",
+      "degree": "完成课程、论文等要求并符合学校学位条件后可申请，具体以学位办法为准"
+    }
+  },
+  {
+    "school": "贵州开放大学",
+    "type": "open",
+    "typeName": "开放教育本科",
+    "major": "护理学",
+    "condition": "通常要求护理专科背景并具备护士执业资格，具体资格审核以招生公告为准",
+    "note": "开放教育属于另一招生体系，学习和考试安排不能简单等同于成人高考",
+    "officialUrl": "https://zsw.gztvu.com/kfjy.htm",
+    "officialLabel": "开放教育招生",
+    "officialSource": "学校官网",
+    "officialCheckedAt": "2026-09-16",
+    "comparison": {
+      "fee": "按专业、学分及学习中心收费标准执行，学费和教材费以招生简章及缴费通知为准",
+      "duration": "通常 2.5 年，以专业培养方案和学籍有效期为准",
+      "entry": "注册入学并接受资格审核，具体条件以招生公告为准",
+      "learning": "以线上学习为主，线下考试、实践环节按学习中心和课程安排执行",
+      "management": "贵州开放大学及所属学习中心负责学籍、教学和考试管理",
+      "exams": "形成性考核与期末考试相结合，时间以学习中心和课程通知为准",
+      "degree": "完成培养方案规定课程并符合学位申请条件后可申请，具体以学校学位办法为准"
+    }
+  }
+];const CHECKLIST_GROUPS = [
+{title:"📋 通用基础材料",items:[
+["id-card","身份证原件及正反面扫描件，确保证件在有效期内"],
+["diploma","护理专科毕业证书原件及扫描件"],
+["xuexin","学信网《教育部学历证书电子注册备案表》"],
+["photo","符合报名系统要求的近期电子证件照"],
+["contact","可正常接收通知的手机号、邮箱和邮寄地址"]
+]},
+{title:"🩺 护理学专业额外材料",items:[
+["nurse-license","护士执业证书原件及扫描件"],
+["work-proof","护理相关在岗工作证明或单位同意报考材料（按院校要求）"],
+["clinical","临床实践、实习或考核所需材料（按专业计划准备）"]
+]},
+{title:"📍 非贵州户籍考生材料",items:[
+["residence","贵州居住证、社保缴纳证明或其他指定证明材料（按当年要求执行）"]
+]},
+{title:"🎓 申请学士学位材料",items:[
+["degree-english","学位英语或其他学校认可的英语成绩证明"],
+["thesis","毕业论文及答辩材料，成绩达到学校规定要求"],
+["scores","本科阶段课程成绩达到学校规定的学位申请标准"]
+]},
+{title:"📌 自考本科特别提醒",items:[
+["graduation-check","申请本科毕业时核验专科毕业证及学信网学历备案材料"],
+["practice-report","实践考核、临床实习报告等专业计划要求的材料"]
+]}
+];
+const STORAGE_KEYS = {favorites:"guizhou-shengben-favorites-v2",checklist:"guizhou-shengben-checklist-v2",examDates:"guizhou-shengben-exam-dates-v2",legacyFavorites:"shengbenCollect"};
+const EXAM_DEFINITIONS = [
+{id:"zikao-autumn",label:"自考统考（10月参考）",month:10,day:17},
+{id:"chengkao",label:"成人高考（10月参考）",month:10,day:25},
+{id:"zikao-spring",label:"自考统考（4月参考）",month:4,day:10}
+];
+const TYPE_LABELS = {zikao:"自考本科",chengkao:"成人本科",open:"开放教育本科"};
+const state = {favorites:[],checked:new Set(),examDates:{},currentResults:[],countdownTimer:null};
+function getItemId(item){return [item.school,item.type,item.major].join("::")}
+const DATA_BY_ID = new Map(APP_DATA.map(item => [getItemId(item),item]));
+const ALL_CHECK_IDS = new Set(CHECKLIST_GROUPS.flatMap(group => group.items.map(item => item[0])));
+function safeRead(key,fallback){try{const raw=localStorage.getItem(key);return raw===null?fallback:JSON.parse(raw)}catch(error){return fallback}}
+function safeWrite(key,value){try{localStorage.setItem(key,JSON.stringify(value));return true}catch(error){return false}}
+function escapeHtml(value){return String(value).replace(/[&<>"']/g,character=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[character])}
+function showToast(message,type){const toast=document.getElementById("toast");toast.textContent=message;toast.className="toast show "+(type||"success");clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>{toast.className="toast "+(type||"success")},2200)}
+function getDefaultExamDate(month,day){const now=new Date();let date=new Date(now.getFullYear(),month-1,day,9,0,0,0);if(date.getTime()<=now.getTime()){date=new Date(now.getFullYear()+1,month-1,day,9,0,0,0)}return formatDateInput(date)}
+function formatDateInput(date){const year=date.getFullYear();const month=String(date.getMonth()+1).padStart(2,"0");const day=String(date.getDate()).padStart(2,"0");return year+"-"+month+"-"+day}
+function isValidDateInput(value){if(!/^\d{4}-\d{2}-\d{2}$/.test(value))return false;const parts=value.split("-").map(Number);const date=new Date(parts[0],parts[1]-1,parts[2],9,0,0,0);return date.getFullYear()===parts[0]&&date.getMonth()===parts[1]-1&&date.getDate()===parts[2]}
+function parseExamDate(value){const parts=value.split("-").map(Number);return new Date(parts[0],parts[1]-1,parts[2],9,0,0,0)}
+function formatChineseDate(value){const date=parseExamDate(value);return date.getFullYear()+"年"+(date.getMonth()+1)+"月"+date.getDate()+"日"}
+function getRemainingText(target,mode){const diff=target.getTime()-Date.now();if(diff<=0)return "已结束";const days=Math.floor(diff/86400000);const hours=Math.floor((diff%86400000)/3600000);const minutes=Math.floor((diff%3600000)/60000);const seconds=Math.floor((diff%60000)/1000);if(mode==="short")return days+"天 "+hours+"小时";return days+"天 "+hours+"小时 "+minutes+"分 "+seconds+"秒"}
+function populateSchoolSelect(){const select=document.getElementById("schoolSelect");const schools=[...new Set(APP_DATA.map(item=>item.school))];select.innerHTML='<option value="">全部院校</option>'+schools.map(school=>'<option value="'+escapeHtml(school)+'">'+escapeHtml(school)+'</option>').join("")}
+function itemIsFocus(item){return item.major.includes("护理")||item.condition.includes("护理")||item.note.includes("护理")}
+function getFilteredData(){const examType=document.getElementById("examType").value;const school=document.getElementById("schoolSelect").value;const keyword=document.getElementById("keyword").value.trim().toLowerCase();return APP_DATA.filter(item=>!examType||item.type===examType).filter(item=>!school||item.school===school).filter(item=>{if(!keyword)return true;const haystack=[item.school,item.major,item.condition,item.note,item.typeName].join(" ").toLowerCase();return haystack.includes(keyword)}).sort((a,b)=>Number(itemIsFocus(b))-Number(itemIsFocus(a)))}
+function renderResults(){
+  const box=document.getElementById("resultBox");
+  const results=state.currentResults;
+  if(results.length===0){box.innerHTML='<div class="empty-state"><span class="empty-icon">🔎</span><strong>没有找到匹配信息</strong><br>请更换考试类型、院校或专业关键词后重试。</div>';return;}
+  const favoriteSet=new Set(state.favorites);
+  const cards=results.map(item=>{
+    const id=getItemId(item),isSaved=favoriteSet.has(id),focusTag=itemIsFocus(item)?'<span class="tag tag-focus">护理相关</span>':"";
+    const officialButton=item.officialUrl?'<a class="btn btn-small btn-official" href="'+escapeHtml(item.officialUrl)+'" target="_blank" rel="noopener noreferrer">'+escapeHtml(item.officialLabel||'官方招生入口')+' ↗</a>':"";
+    return '<article class="result-card '+(itemIsFocus(item)?"focus":"")+'"><div class="result-card-head"><div><span class="tag tag-'+escapeHtml(item.type)+'">'+escapeHtml(item.typeName)+'</span><h3 class="school-name">'+escapeHtml(item.school)+focusTag+'</h3></div><div class="card-actions">'+officialButton+'<button class="btn btn-small favorite-btn '+(isSaved?"saved":"")+'" type="button" data-favorite-id="'+escapeHtml(id)+'">'+(isSaved?"已收藏":"收藏")+'</button></div></div><div class="meta-row"><div><strong>招生专业：</strong>'+escapeHtml(item.major)+'</div><div><strong>报考条件：</strong>'+escapeHtml(item.condition)+'</div><div><strong>参考备注：</strong>'+escapeHtml(item.note)+'</div></div><div class="official-note">官方入口来源：'+escapeHtml(item.officialSource||'学校官网')+' · 核验日期：'+escapeHtml(item.officialCheckedAt||'待核验')+' · 请以页面最新公告为准</div></article>';
+  }).join("");
+  box.innerHTML='<div class="result-summary"><span>共找到 <strong>'+results.length+'</strong> 条参考信息</span><span>护理相关结果已优先展示</span></div><div class="result-list">'+cards+'</div>';
+}
+function runSearch(){state.currentResults=getFilteredData();renderResults()}
+function resetSearch(){document.getElementById("examType").value="";document.getElementById("schoolSelect").value="";document.getElementById("keyword").value="";runSearch()}function updateFavoriteUI(){document.getElementById("favTabCount").textContent=state.favorites.length;document.getElementById("favoriteCount").textContent=state.favorites.length;document.getElementById("clearFavoritesBtn").disabled=state.favorites.length===0;renderFavorites()}
+function renderFavorites(){
+  const wrap=document.getElementById("favoriteList");
+  if(state.favorites.length===0){wrap.innerHTML='<div class="empty-state"><span class="empty-icon">⭐</span><strong>暂无收藏</strong><br>在院校查询结果中点击“收藏”即可加入这里。</div>';return;}
+  wrap.innerHTML='<div class="result-list">'+state.favorites.map(id=>{
+    const item=DATA_BY_ID.get(id);if(!item)return "";
+    const officialButton=item.officialUrl?'<a class="btn btn-small btn-official" href="'+escapeHtml(item.officialUrl)+'" target="_blank" rel="noopener noreferrer">'+escapeHtml(item.officialLabel||'官方招生入口')+' ↗</a>':"";
+    return '<article class="result-card '+(itemIsFocus(item)?"focus":"")+'"><div class="result-card-head"><div><span class="tag tag-'+escapeHtml(item.type)+'">'+escapeHtml(item.typeName)+'</span><h3 class="school-name">'+escapeHtml(item.school)+'</h3></div><div class="card-actions">'+officialButton+'<button class="btn btn-small btn-danger" type="button" data-remove-favorite="'+escapeHtml(id)+'">取消收藏</button></div></div><div class="meta-row"><div><strong>招生专业：</strong>'+escapeHtml(item.major)+'</div><div><strong>报考条件：</strong>'+escapeHtml(item.condition)+'</div><div><strong>参考备注：</strong>'+escapeHtml(item.note)+'</div></div><div class="official-note">官方入口来源：'+escapeHtml(item.officialSource||'学校官网')+' · 核验日期：'+escapeHtml(item.officialCheckedAt||'待核验')+' · 请以页面最新公告为准</div></article>';
+  }).join("")+'</div>';
+}
+function toggleFavorite(id){if(!DATA_BY_ID.has(id))return;const index=state.favorites.indexOf(id);if(index>=0){state.favorites.splice(index,1);showToast("已取消收藏")}else{state.favorites.push(id);showToast("收藏成功，可在“我的收藏”中查看")}safeWrite(STORAGE_KEYS.favorites,state.favorites);updateFavoriteUI();renderResults()}
+function loadFavorites(){const stored=safeRead(STORAGE_KEYS.favorites,null);let ids=Array.isArray(stored)?stored:[];if(ids.length===0){const legacy=safeRead(STORAGE_KEYS.legacyFavorites,[]);if(Array.isArray(legacy)&&legacy.length){ids=legacy.map(item=>{if(typeof item==="string")return item;if(item&&item.school&&item.type&&item.major)return getItemId(item);return ""});try{localStorage.removeItem(STORAGE_KEYS.legacyFavorites)}catch(error){}}}state.favorites=[...new Set(ids)].filter(id=>DATA_BY_ID.has(id));safeWrite(STORAGE_KEYS.favorites,state.favorites)}
+function renderChecklist(){const wrap=document.getElementById("checklist");wrap.innerHTML=CHECKLIST_GROUPS.map(group=>{const items=group.items.map(item=>{const id=item[0];const checked=state.checked.has(id);return '<label class="check-item '+(checked?"done":"")+'"><input type="checkbox" data-check-id="'+escapeHtml(id)+'" '+(checked?"checked":"")+'><span>'+escapeHtml(item[1])+'</span></label>'}).join("");return '<section class="check-group"><h3>'+escapeHtml(group.title)+'</h3>'+items+'</section>'}).join("");updateChecklistProgress()}
+function updateChecklistProgress(){const total=ALL_CHECK_IDS.size;const completed=[...state.checked].filter(id=>ALL_CHECK_IDS.has(id)).length;const percent=total?Math.round(completed/total*100):0;document.getElementById("progressText").textContent=completed+" / "+total+"（"+percent+"%）";document.getElementById("progressBar").style.width=percent+"%"}
+function loadChecklist(){const stored=safeRead(STORAGE_KEYS.checklist,[]);state.checked=new Set(Array.isArray(stored)?stored.filter(id=>ALL_CHECK_IDS.has(id)):[])}
+function initExamDates(){const stored=safeRead(STORAGE_KEYS.examDates,null);const dates={};EXAM_DEFINITIONS.forEach(definition=>{const savedValue=stored&&stored[definition.id];dates[definition.id]=isValidDateInput(savedValue)?savedValue:getDefaultExamDate(definition.month,definition.day)});state.examDates=dates;safeWrite(STORAGE_KEYS.examDates,state.examDates)}
+function renderDateSettings(){const wrap=document.getElementById("dateSettings");wrap.innerHTML=EXAM_DEFINITIONS.map(definition=>{const value=state.examDates[definition.id];return '<div class="field"><label for="date-'+definition.id+'">'+escapeHtml(definition.label)+'</label><input id="date-'+definition.id+'" type="date" value="'+escapeHtml(value)+'"></div>'}).join("")}
+function renderCountdown(){const exams=EXAM_DEFINITIONS.map(definition=>{const dateString=state.examDates[definition.id];return {...definition,dateString,date:parseExamDate(dateString)}}).sort((a,b)=>a.date-b.date);const next=exams.find(item=>item.date.getTime()>Date.now());const nextBox=document.getElementById("nextExamBox");if(next){nextBox.innerHTML='<div class="next-exam"><div class="next-exam-label">距离最近一场参考考试还有</div><div class="next-exam-name">'+escapeHtml(next.label)+' · '+formatChineseDate(next.dateString)+'</div><div class="countdown-value" data-countdown="'+next.date.getTime()+'" data-mode="full"></div></div>'}else{nextBox.innerHTML='<div class="empty-state"><span class="empty-icon">⏰</span><strong>当前设置的考试日期均已结束</strong><br>请在下方修改为新的官方考试日期。</div>'}document.getElementById("examCountdowns").innerHTML=exams.map(item=>'<div class="count-card"><div class="count-card-name">'+escapeHtml(item.label)+'</div><div class="count-card-date">'+formatChineseDate(item.dateString)+'</div><div class="count-card-value" data-countdown="'+item.date.getTime()+'" data-mode="short"></div></div>').join("");updateCountdownNumbers()}
+function updateCountdownNumbers(){document.querySelectorAll("[data-countdown]").forEach(element=>{const target=new Date(Number(element.dataset.countdown));element.textContent=getRemainingText(target,element.dataset.mode)})}
+function startCountdownTimer(){stopCountdownTimer();updateCountdownNumbers();state.countdownTimer=setInterval(updateCountdownNumbers,1000)}
+function stopCountdownTimer(){if(state.countdownTimer){clearInterval(state.countdownTimer);state.countdownTimer=null}}function switchPage(pageId,button){document.querySelectorAll(".page").forEach(page=>page.classList.remove("active"));document.querySelectorAll(".tab-button").forEach(tab=>tab.classList.remove("active"));const page=document.getElementById(pageId);if(page)page.classList.add("active");if(button)button.classList.add("active");if(pageId==="collectPage")renderFavorites();if(pageId==="countPage"){renderDateSettings();renderCountdown();startCountdownTimer()}else{stopCountdownTimer()}window.scrollTo({top:0,behavior:"smooth"})}
+function saveExamDates(){const nextDates={};for(const definition of EXAM_DEFINITIONS){const input=document.getElementById("date-"+definition.id);if(!isValidDateInput(input.value)){showToast("请填写有效的考试日期","error");input.focus();return}nextDates[definition.id]=input.value}state.examDates=nextDates;safeWrite(STORAGE_KEYS.examDates,state.examDates);renderCountdown();showToast("考试日期已保存")}
+function resetExamDates(){if(!confirm("确定恢复为默认参考日期吗？"))return;const dates={};EXAM_DEFINITIONS.forEach(definition=>{dates[definition.id]=getDefaultExamDate(definition.month,definition.day)});state.examDates=dates;safeWrite(STORAGE_KEYS.examDates,state.examDates);renderDateSettings();renderCountdown();showToast("已恢复默认参考日期")}
+function bindEvents(){
+document.querySelectorAll(".tab-button").forEach(button=>button.addEventListener("click",()=>switchPage(button.dataset.page,button)));
+document.getElementById("searchBtn").addEventListener("click",runSearch);
+document.getElementById("resetBtn").addEventListener("click",resetSearch);
+document.getElementById("examType").addEventListener("change",runSearch);
+document.getElementById("schoolSelect").addEventListener("change",runSearch);
+document.getElementById("keyword").addEventListener("keydown",event=>{if(event.key==="Enter")runSearch()});
+document.getElementById("resultBox").addEventListener("click",event=>{const button=event.target.closest("[data-favorite-id]");if(button)toggleFavorite(button.dataset.favoriteId)});
+document.getElementById("favoriteList").addEventListener("click",event=>{const button=event.target.closest("[data-remove-favorite]");if(button)toggleFavorite(button.dataset.removeFavorite)});
+document.getElementById("clearFavoritesBtn").addEventListener("click",()=>{if(state.favorites.length===0||!confirm("确定清空全部收藏吗？"))return;state.favorites=[];safeWrite(STORAGE_KEYS.favorites,state.favorites);updateFavoriteUI();renderResults();showToast("已清空收藏")});
+document.getElementById("checklist").addEventListener("change",event=>{const checkbox=event.target.closest("[data-check-id]");if(!checkbox)return;if(checkbox.checked)state.checked.add(checkbox.dataset.checkId);else state.checked.delete(checkbox.dataset.checkId);checkbox.closest(".check-item").classList.toggle("done",checkbox.checked);safeWrite(STORAGE_KEYS.checklist,[...state.checked]);updateChecklistProgress()});
+document.getElementById("clearChecklistBtn").addEventListener("click",()=>{if(state.checked.size===0||!confirm("确定清除全部材料勾选吗？"))return;state.checked.clear();safeWrite(STORAGE_KEYS.checklist,[]);renderChecklist();showToast("已清除材料勾选")});
+document.getElementById("saveDatesBtn").addEventListener("click",saveExamDates);
+document.getElementById("resetDatesBtn").addEventListener("click",resetExamDates);
+window.addEventListener("beforeunload",stopCountdownTimer);
+}
+function init(){populateSchoolSelect();loadFavorites();loadChecklist();initExamDates();renderChecklist();renderDateSettings();updateFavoriteUI();bindEvents();runSearch()}
+document.addEventListener("DOMContentLoaded",init);
+</script>
+<script id="school-compare-script">
+(() => {
+  "use strict";
+  const LIMIT = 4;
+  const STORAGE_KEY = "guizhou-shengben-compare-v1";
+  function ensureComparePage() {
+    if (document.getElementById("schoolComparePage")) return;
+    const style = document.createElement("style");
+    style.id = "school-compare-style";
+    style.textContent = `
+      .compare-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+      .compare-btn{background:#f4f7fb;color:#365a8d;border-color:#c8d5e6}
+      .compare-btn.selected{background:#dcefe4;color:#24724e;border-color:#9bceb2}
+      .compare-table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+      .compare-table{min-width:760px}
+      .compare-school-head h4{font-size:15px;line-height:1.4;margin:5px 0 7px}
+      .compare-school-head .btn{margin-top:8px}
+      .compare-table td:first-child,.compare-table th:first-child{width:132px;background:#f6f9fd;color:#334867;font-weight:700}
+      .compare-table td{min-width:190px}
+      .compare-note{margin-top:12px;color:var(--muted);font-size:12px}
+      @media(max-width:620px){.compare-actions{width:100%}.result-card-head .compare-actions .btn{width:auto}}
+    `;
+    document.head.appendChild(style);
+    const nav = document.querySelector(".nav-tabs");
+    const searchPage = document.getElementById("searchPage");
+    if (!nav || !searchPage) return;
+    const tab = document.createElement("button");
+    tab.type = "button";
+    tab.className = "tab-button";
+    tab.dataset.page = "schoolComparePage";
+    tab.innerHTML = '院校对比 <span class="tab-count" id="compareTabCount">0</span>';
+    nav.insertBefore(tab, nav.children[1] || null);
+    const section = document.createElement("section");
+    section.id = "schoolComparePage";
+    section.className = "page";
+    section.setAttribute("aria-labelledby", "schoolCompareTitle");
+    section.innerHTML = '<div class="card"><div class="section-head"><div><h2 id="schoolCompareTitle">已选院校对比</h2><p>选择 2 至 4 条院校专业信息，按费用、学制、学习和考试安排逐项查看。</p></div><button class="btn btn-danger btn-small" id="clearCompareBtn" type="button">清空对比</button></div><div id="compareContent"></div></div>';
+    searchPage.insertAdjacentElement("afterend", section);
+    tab.addEventListener("click", () => {
+      switchPage("schoolComparePage", tab);
+      renderComparePage();
+    });
+  }
+  function getInfo(item) {
+    return item.comparison || {};
+  }
+  function isCompared(id) {
+    return state.compare.includes(id);
+  }
+  function decorateContainer(selector) {
+    document.querySelectorAll(selector + " .result-card").forEach(card => {
+      if (card.querySelector("[data-compare-id]")) return;
+      const favoriteButton = card.querySelector("[data-favorite-id]") || card.querySelector("[data-remove-favorite]");
+      if (!favoriteButton) return;
+      const id = favoriteButton.dataset.favoriteId || favoriteButton.dataset.removeFavorite;
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "btn btn-small compare-btn" + (isCompared(id) ? " selected" : "");
+      button.dataset.compareId = id;
+      button.textContent = isCompared(id) ? "已加入对比" : "加入对比";
+      favoriteButton.parentNode.insertBefore(button, favoriteButton);
+    });
+    const wrap = document.querySelector(selector + " .card-actions");
+    if (wrap && !wrap.classList.contains("compare-actions")) wrap.classList.add("compare-actions");
+  }
+  function updateCompareIndicators() {
+    const count = state.compare.length;
+    const tabCount = document.getElementById("compareTabCount");
+    const clearButton = document.getElementById("clearCompareBtn");
+    if (tabCount) tabCount.textContent = count;
+    if (clearButton) clearButton.disabled = count === 0;
+    decorateContainer("#resultBox");
+    decorateContainer("#favoriteList");
+    renderComparePage();
+  }
+  function toggleCompare(id) {
+    if (!DATA_BY_ID.has(id)) return;
+    const index = state.compare.indexOf(id);
+    if (index >= 0) {
+      state.compare.splice(index, 1);
+      showToast("已从对比中移除");
+    } else {
+      if (state.compare.length >= LIMIT) {
+        showToast("最多同时对比 " + LIMIT + " 条信息", "error");
+        return;
+      }
+      state.compare.push(id);
+      showToast("已加入院校对比");
+    }
+    safeWrite(STORAGE_KEY, state.compare);
+    renderResults();
+    renderFavorites();
+    updateCompareIndicators();
+  }
+  function compareCell(item, value) {
+    return '<td>' + (value || "以学校官方说明为准") + '</td>';
+  }
+  function renderComparePage() {
+    const content = document.getElementById("compareContent");
+    if (!content) return;
+    if (state.compare.length === 0) {
+      content.innerHTML = '<div class="empty-state"><span class="empty-icon">⚖️</span><strong>还没有选择对比院校</strong><br>在院校查询或收藏页面点击“加入对比”，即可生成横向对比表。</div>';
+      return;
+    }
+    const items = state.compare.map(id => DATA_BY_ID.get(id)).filter(Boolean);
+    const info = items.map(getInfo);
+    const header = '<tr><th>对比项</th>' + items.map((item, index) => '<th><div class="compare-school-head"><span class="tag tag-' + escapeHtml(item.type) + '">' + escapeHtml(item.typeName) + '</span><h4>' + escapeHtml(item.school) + '</h4><button class="btn btn-danger btn-small" type="button" data-remove-compare="' + escapeHtml(getItemId(item)) + '">移除</button></div></th>').join("") + '</tr>';
+    const rows = [
+      ["招生专业", items.map(item => escapeHtml(item.major))],
+      ["学费及费用", info.map(value => escapeHtml(value.fee))],
+      ["学制预期", info.map(value => escapeHtml(value.duration))],
+      ["入学方式", info.map(value => escapeHtml(value.entry))],
+      ["学习方式", info.map(value => escapeHtml(value.learning))],
+      ["教学管理", info.map(value => escapeHtml(value.management))],
+      ["考试安排", info.map(value => escapeHtml(value.exams))],
+      ["毕业与学位", info.map(value => escapeHtml(value.degree))],
+      ["报考条件", items.map(item => escapeHtml(item.condition))],
+      ["官方入口", items.map(item => item.officialUrl ? '<a class="btn btn-small btn-official" href="' + escapeHtml(item.officialUrl) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(item.officialLabel || "官方招生入口") + ' ↗</a>' : "待补充")]
+    ];
+    const body = rows.map(row => '<tr><td>' + row[0] + '</td>' + row[1].map(value => compareCell(null, value)).join("") + '</tr>').join("");
+    content.innerHTML = '<div class="result-summary"><span>已选择 <strong>' + items.length + ' / ' + LIMIT + '</strong> 条信息</span><span>表格可左右滑动查看</span></div><div class="compare-table-wrap"><table class="compare-table"><thead>' + header + '</thead><tbody>' + body + '</tbody></table></div><div class="compare-note">费用、学制和教学安排会随学校政策调整。表中内容用于初步筛选，报名和缴费前请打开对应官方入口核实。</div>';
+  }
+  function bindCompareEvents() {
+    document.getElementById("resultBox").addEventListener("click", event => {
+      const button = event.target.closest("[data-compare-id]");
+      if (button) toggleCompare(button.dataset.compareId);
+    });
+    document.getElementById("favoriteList").addEventListener("click", event => {
+      const button = event.target.closest("[data-compare-id]");
+      if (button) toggleCompare(button.dataset.compareId);
+    });
+    document.getElementById("compareContent").addEventListener("click", event => {
+      const button = event.target.closest("[data-remove-compare]");
+      if (button) toggleCompare(button.dataset.removeCompare);
+    });
+    document.getElementById("clearCompareBtn").addEventListener("click", () => {
+      if (state.compare.length === 0 || !confirm("确定清空全部对比院校吗？")) return;
+      state.compare = [];
+      safeWrite(STORAGE_KEY, state.compare);
+      renderResults();
+      renderFavorites();
+      updateCompareIndicators();
+      showToast("已清空对比");
+    });
+  }
+  function initCompare() {
+    ensureComparePage();
+    const stored = safeRead(STORAGE_KEY, []);
+    state.compare = (Array.isArray(stored) ? stored : []).filter(id => DATA_BY_ID.has(id)).slice(0, LIMIT);
+    const baseRenderResults = renderResults;
+    renderResults = function() {
+      baseRenderResults();
+      updateCompareIndicators();
+    };
+    const baseRenderFavorites = renderFavorites;
+    renderFavorites = function() {
+      baseRenderFavorites();
+      updateCompareIndicators();
+    };
+    bindCompareEvents();
+    renderResults();
+    renderFavorites();
+    updateCompareIndicators();
+  }
+  document.addEventListener("DOMContentLoaded", initCompare);
+})();
+</script>
+<script>
+window.MAJOR_PROFILES = {"meta":{"generatedAt":"2026-09-16","notice":"专业介绍和就业方向为学习规划参考，具体培养方案、课程、考试大纲和就业数据以学校官方资料为准。","sourcePolicy":"仅把官方招生简章、学校专业介绍和就业质量报告作为最终核验来源。"},"groups":{"medicine":{"category":"医学类","intro":"面向医疗卫生与健康服务领域，强调专业基础、临床或岗位实践和职业资格衔接。","courses":"医学基础、专业核心课程、临床或岗位实践、毕业考核","employment":"医疗卫生机构、健康服务、医药企业、公共卫生及相关管理岗位","examFocus":"基础医学知识、专业核心课程和临床/岗位综合应用；以课程考试大纲和学校通知为准","degreeNote":"符合课程、实践、论文及学位外语等要求可申请学士学位，以学校学位办法为准"},"education":{"category":"教育类","intro":"面向基础教育、学前教育及教育服务领域，重视教育理论、教学能力和职业素养。","courses":"教育学、心理学、课程与教学论、专业方向课程、教育实践","employment":"学校、幼儿园、教育培训、教育管理与教育服务岗位","examFocus":"政治、英语和教育理论等入学科目；专业课按课程大纲复习","degreeNote":"完成课程和论文等要求，符合学校学位条件可申请，以学校办法为准"},"humanities":{"category":"文史类","intro":"培养语言、文化、历史和社会传播方面的综合能力，适合教育、行政和公共文化岗位。","courses":"专业基础、文学语言历史核心课程、写作与研究训练、毕业论文","employment":"教育、行政、文化传播、媒体、公共服务和企业文职岗位","examFocus":"政治、英语、大学语文或相关专业基础课；以当年考试大纲为准","degreeNote":"完成课程、论文等要求，符合学校学位条件可申请，以学校办法为准"},"management":{"category":"经管类","intro":"面向企业、公共部门和社会组织管理岗位，强调组织、运营、财务与沟通能力。","courses":"管理学、经济学、专业核心课程、数据分析或实务课程、毕业论文","employment":"企业管理、行政、人力资源、财务、市场营销、公共服务及社会工作岗位","examFocus":"政治、英语、高等数学（二）或专业基础课；以当年考试大纲为准","degreeNote":"完成课程、论文等要求，符合学校学位条件可申请，以学校办法为准"},"law":{"category":"法学类","intro":"培养法律思维、规则应用和公共事务处理能力，适合法务、行政和基层治理岗位。","courses":"法理学、宪法、民法、刑法、诉讼法、专业方向课程、毕业论文","employment":"法务、行政、司法辅助、基层治理、社会组织和合规岗位","examFocus":"政治、英语、民法等入学科目；专业课程按考试大纲复习","degreeNote":"完成课程、论文等要求，符合学校学位条件可申请，以学校办法为准"},"engineering":{"category":"工学类","intro":"面向工程技术与数字化应用领域，重视工程实践、技术分析和项目协作能力。","courses":"高等数学、工程基础、专业核心课程、实践与课程设计、毕业设计","employment":"工程建设、制造、信息技术、项目管理、技术服务及运维岗位","examFocus":"政治、英语、高等数学（一）等入学科目；专业课按课程大纲复习","degreeNote":"完成课程、实践和毕业设计等要求，符合学校学位条件可申请"},"professional":{"category":"应用型专业","intro":"面向行业岗位能力培养，强调理论、实务和职业素养结合。","courses":"公共基础课、专业核心课程、实务训练和毕业考核","employment":"具体就业行业、岗位和升学方向需结合学校专业介绍与就业质量报告查看","examFocus":"入学考试科目按报考类型确定，专业课程以官方考试大纲和学校通知为准","degreeNote":"完成课程及相关要求，符合学校学位条件可申请"}},"profiles":{"护理学":{"name":"护理学","category":"医学类","intro":"培养具备护理理论、临床护理和健康服务能力的高级应用型人才，适合护理专科背景继续提升。","courses":"基础护理学、内科护理学、外科护理学、妇产科护理学、儿科护理学、护理管理、护理研究","employment":"医院、社区卫生、健康管理、养老照护、护理教育及医药健康服务岗位","examFocus":"重点复习护理基础、内外科护理和临床综合应用；自考课程按省统考大纲，成考入学考政治、英语、医学综合","degreeNote":"符合课程、实践、论文及学位外语等要求可申请学士学位，以学校学位办法为准"},"药学":{"name":"药学","category":"医学类","intro":"学习药物制剂、药理、药物分析和合理用药等知识，面向医药行业应用岗位。","courses":"药理学、药剂学、药物分析、药事管理、临床药物治疗学","employment":"医院药房、医药企业、药品流通、药品监管与健康服务岗位","examFocus":"重点复习药理学、药剂学和药物分析；以课程大纲和学校通知为准","degreeNote":"符合课程、实践、论文及学位外语等要求可申请学士学位，以学校学位办法为准"},"中医学":{"name":"中医学","category":"医学类","intro":"学习中医基础理论、诊断、方药和临床诊疗思路，强调中医药传承与实践。","courses":"中医基础理论、中医诊断学、中药学、方剂学、中医内科学、针灸推拿","employment":"中医医疗机构、康复保健、医药企业、健康管理及基层卫生岗位","examFocus":"重点复习中医基础、方剂和中医内科；须符合医学类报考资格","degreeNote":"符合课程、实践、论文及学位外语等要求可申请学士学位，以学校学位办法为准"},"中药学":{"name":"中药学","category":"医学类","intro":"学习中药鉴定、炮制、制剂、药理和质量控制等知识，面向中药产业。","courses":"中药学、中药鉴定学、中药药剂学、中药化学、中药炮制学","employment":"中药企业、医院中药房、药品检验、医药流通和健康产品岗位","examFocus":"重点复习中药鉴定、药剂与药理；以课程大纲为准","degreeNote":"符合课程、实践、论文及学位外语等要求可申请学士学位，以学校学位办法为准"},"学前教育":{"name":"学前教育","category":"教育类","intro":"培养面向幼儿园和早期教育机构的保教与教育服务人才。","courses":"学前教育学、幼儿心理学、幼儿卫生保健、幼儿游戏、幼儿园课程与活动设计","employment":"幼儿园、早教机构、托育服务、儿童教育及教育管理岗位","examFocus":"重点复习政治、英语、教育理论；专业课按课程大纲复习","degreeNote":"完成课程和论文等要求，符合学校学位条件可申请，以学校办法为准"},"小学教育":{"name":"小学教育","category":"教育类","intro":"培养小学教育、班级管理和基础教育服务能力，适合教师及相关从业者提升学历。","courses":"小学教育学、心理学、课程与教学论、班级管理、教育研究方法","employment":"小学、教育培训、教育管理及公共服务岗位","examFocus":"重点复习政治、英语、教育理论；以学校招生简章为准","degreeNote":"完成课程和论文等要求，符合学校学位条件可申请，以学校办法为准"},"汉语言文学":{"name":"汉语言文学","category":"文史类","intro":"培养中文表达、文学鉴赏、写作与文化传播能力，适合教育、行政和传媒岗位。","courses":"现代汉语、古代汉语、中国古代文学、中国现当代文学、写作、文学理论","employment":"学校、行政、媒体、文化传播、文案策划和公共服务岗位","examFocus":"重点复习政治、英语、大学语文；专业课按课程大纲复习","degreeNote":"完成课程、论文等要求，符合学校学位条件可申请，以学校办法为准"},"行政管理":{"name":"行政管理","category":"经管类","intro":"培养公共事务、组织管理和行政服务能力，适合机关企事业单位综合管理岗位。","courses":"管理学原理、行政管理学、公共政策、组织行为学、行政法与公文写作","employment":"行政、人事、公共服务、社区治理、企业综合管理岗位","examFocus":"重点复习政治、英语、高等数学（二）或专业基础课；以大纲为准","degreeNote":"完成课程、论文等要求，符合学校学位条件可申请，以学校办法为准"},"工程管理":{"name":"工程管理","category":"经管类","intro":"面向工程项目的成本、进度、质量和合同管理，强调技术与管理结合。","courses":"工程项目管理、工程经济学、工程造价、合同管理、施工组织","employment":"建筑施工、项目管理、造价咨询、房地产和工程服务岗位","examFocus":"重点复习政治、英语、高等数学（二）；专业课按考试大纲复习","degreeNote":"完成课程、论文等要求，符合学校学位条件可申请，以学校办法为准"},"工商管理":{"name":"工商管理","category":"经管类","intro":"学习企业经营、市场营销、组织管理和财务基础，适合综合管理岗位。","courses":"管理学、市场营销、财务管理、人力资源管理、企业战略管理","employment":"企业运营、市场营销、人力资源、行政管理和创业岗位","examFocus":"重点复习政治、英语、高等数学（二）；以考试大纲为准","degreeNote":"完成课程、论文等要求，符合学校学位条件可申请，以学校办法为准"},"会计学":{"name":"会计学","category":"经管类","intro":"培养会计核算、财务分析、税务和内部控制能力。","courses":"基础会计、财务会计、成本会计、财务管理、审计学、税法","employment":"企业财务、会计、审计、税务、金融机构及财务管理岗位","examFocus":"重点复习政治、英语、高等数学（二）；专业课按大纲复习","degreeNote":"完成课程、论文等要求，符合学校学位条件可申请，以学校办法为准"},"社会工作":{"name":"社会工作","category":"应用型专业","intro":"培养社会服务、个案小组工作、社区治理和项目执行能力。","courses":"社会工作概论、个案工作、小组工作、社区工作、社会政策、社会研究方法","employment":"社会工作机构、社区、公益组织、民政、养老和公共服务岗位","examFocus":"重点复习政治、英语、民法或专业基础课；以当年大纲为准","degreeNote":"完成课程及相关要求，符合学校学位条件可申请"},"法学":{"name":"法学","category":"法学类","intro":"系统学习法律基础和法律实务，培养规则分析和合规处理能力。","courses":"法理学、宪法、民法、刑法、民事诉讼法、刑事诉讼法、行政法","employment":"法务、行政、司法辅助、基层治理、合规与社会组织岗位","examFocus":"重点复习政治、英语、民法；专业课按课程大纲复习","degreeNote":"完成课程、论文等要求，符合学校学位条件可申请，以学校办法为准"},"土木工程":{"name":"土木工程","category":"工学类","intro":"学习工程结构、施工技术、工程测量和项目管理知识。","courses":"工程力学、结构力学、混凝土结构、施工技术、工程测量、项目管理","employment":"建筑施工、设计咨询、工程监理、市政与基础设施岗位","examFocus":"重点复习政治、英语、高等数学（一）；专业课按大纲复习","degreeNote":"完成课程、实践和毕业设计等要求，符合学校学位条件可申请"},"计算机科学与技术":{"name":"计算机科学与技术","category":"工学类","intro":"学习程序设计、数据结构、数据库、网络和软件开发基础。","courses":"程序设计、数据结构、数据库原理、计算机网络、操作系统、软件工程","employment":"软件开发、信息技术、网络运维、数据应用和技术支持岗位","examFocus":"重点复习政治、英语、高等数学（一）；专业课以课程大纲为准","degreeNote":"完成课程、实践和毕业设计等要求，符合学校学位条件可申请"}}};
+
+</script>
+<script>
+(() => {
+  "use strict";
+  const catalogData = window.MAJOR_PROFILES || {profiles:{}};
+  const profiles = catalogData.profiles || {};
+  const fallback = (profiles.__GROUP__professional || {category:'综合类',intro:'专业培养方案和就业方向以学校官方资料为准。',courses:'公共基础课、专业核心课程和实践环节',employment:'请结合学校专业介绍和就业质量报告查看',examFocus:'以官方考试大纲和学校通知为准',degreeNote:'以学校学位办法为准'});
+  const employmentReports = {
+    '贵州大学':'http://jobs.gzu.edu.cn/',
+    '贵州医科大学':'https://zkb.gmc.edu.cn/',
+    '遵义医科大学':'https://www.zmu.edu.cn/info/1098/26241.htm',
+    '黔南民族师范学院':'https://www.sgmtu.edu.cn/info/1028/1656.htm',
+    '贵州理工学院':'http://www.git.edu.cn/jgxy/info/2036/2221.htm',
+    '贵州财经大学':'https://job.gufe.edu.cn/detail/news?id=942943',
+    '贵州工程应用技术学院':'https://www.gues.edu.cn/info/1088/13814.htm',
+    '铜仁学院':'https://www.gztrc.edu.cn/zsyjyzdc/info/1101/4747.htm',
+    '安顺学院':'https://www.asu.edu.cn/info/1293/99464.htm'
+  };
+  const examSources = {
+    zikao:'https://zsksy.guizhou.gov.cn/zxks/',
+    chengkao:'https://zsksy.guizhou.gov.cn/crgk/',
+    open:'https://zsw.gztvu.com/kfjy.htm'
+  };
+  function parseMajors(item) {
+    const raw = String(item.major || '').replace(/专业/g,'').replace(/等/g,'');
+    const names = raw.split(/[、,，/]/).map(value => value.trim()).filter(Boolean);
+    return names.length ? [...new Set(names)] : ['综合专业'];
+  }
+  function getProfile(major) {
+    return profiles[major] || {...fallback, name:major};
+  }
+  function getRecords() {
+    const records = [];
+    APP_DATA.forEach(item => {
+      parseMajors(item).forEach(major => {
+        records.push({id:getItemId(item) + '||' + major, item, major, profile:getProfile(major)});
+      });
+    });
+    return records;
+  }
+  function getHost(url) {
+    try { return new URL(url).host; } catch (error) { return ''; }
+  }
+  function getEmploymentUrl(item) {
+    if (employmentReports[item.school]) return employmentReports[item.school];
+    const host = getHost(item.officialUrl);
+    if (!host) return '';
+    return 'https://www.so.com/s?q=' + encodeURIComponent('site:' + host + ' 毕业生就业质量报告 专业');
+  }
+  function ensureMajorPage() {
+    if (document.getElementById('majorPage')) return;
+    const style = document.createElement('style');
+    style.id = 'major-center-style';
+    style.textContent = `
+      .major-toolbar{display:grid;grid-template-columns:1.4fr 1fr 1fr auto;gap:10px;align-items:end;margin-bottom:16px}
+      .major-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+      .major-card{padding:16px;border:1px solid var(--line);border-radius:14px;background:#fff;box-shadow:0 5px 16px rgba(28,50,86,.05)}
+      .major-card h3{font-size:17px;margin:7px 0 5px}
+      .major-card p{font-size:13px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+      .major-card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+      .major-modal{position:fixed;z-index:9998;inset:0;display:none;align-items:flex-start;justify-content:center;padding:24px;background:rgba(16,32,56,.55);overflow:auto}
+      .major-modal.show{display:flex}
+      .major-modal-panel{width:min(780px,100%);margin:auto;background:#fff;border-radius:18px;box-shadow:0 24px 60px rgba(10,25,50,.28);padding:22px}
+      .major-modal-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:14px}
+      .major-section{padding:13px 0;border-top:1px solid var(--line)}
+      .major-section h4{font-size:14px;color:#334867;margin-bottom:4px}
+      .major-section p{color:#435168;font-size:14px}
+      .major-source-links{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+      @media(max-width:820px){.nav-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}.major-toolbar{grid-template-columns:1fr 1fr}.major-grid{grid-template-columns:1fr}}
+      @media(max-width:620px){.major-toolbar{grid-template-columns:1fr}.major-modal{padding:10px}.major-modal-panel{padding:17px}}
+    `;
+    document.head.appendChild(style);
+    const nav = document.querySelector('.nav-tabs');
+    const searchPage = document.getElementById('searchPage');
+    if (!nav || !searchPage) return;
+    const tab = document.createElement('button');
+    tab.type = 'button';
+    tab.className = 'tab-button';
+    tab.dataset.page = 'majorPage';
+    tab.innerHTML = '专业资料 <span class="tab-count" id="majorTabCount">0</span>';
+    nav.insertBefore(tab, nav.children[2] || null);
+    const section = document.createElement('section');
+    section.id = 'majorPage';
+    section.className = 'page';
+    section.setAttribute('aria-labelledby','majorPageTitle');
+    section.innerHTML = '<div class="card"><div class="section-head"><div><h2 id="majorPageTitle">专业介绍、考试重点与就业方向</h2><p>按院校、招生类型和专业关键词查看；就业数据优先链接学校官方就业报告。</p></div></div><div class="major-toolbar"><div class="field"><label for="majorKeyword">专业关键词</label><input id="majorKeyword" type="search" placeholder="例如：护理学、会计、土木"></div><div class="field"><label for="majorSchool">院校</label><select id="majorSchool"><option value="">全部院校</option></select></div><div class="field"><label for="majorType">招生类型</label><select id="majorType"><option value="">全部类型</option><option value="zikao">自考本科</option><option value="chengkao">成人本科</option><option value="open">开放教育本科</option></select></div><button class="btn btn-secondary" id="majorReset" type="button">重置</button></div><div id="majorCatalog"></div></div>';
+    searchPage.insertAdjacentElement('afterend',section);
+    const modal = document.createElement('div');
+    modal.id = 'majorModal';
+    modal.className = 'major-modal';
+    modal.innerHTML = '<div class="major-modal-panel" role="dialog" aria-modal="true"><div class="major-modal-head"><div><h3 id="majorModalTitle">专业资料</h3><p id="majorModalSubtitle" class="muted"></p></div><button class="btn btn-secondary btn-small" id="majorModalClose" type="button">关闭</button></div><div id="majorModalBody"></div></div>';
+    document.body.appendChild(modal);
+    tab.addEventListener('click', () => { switchPage('majorPage',tab); renderCatalog(); });
+    const schoolSelect = document.getElementById('majorSchool');
+    [...new Set(APP_DATA.map(item => item.school))].forEach(school => {
+      const option = document.createElement('option');
+      option.value = school;
+      option.textContent = school;
+      schoolSelect.appendChild(option);
+    });
+    document.getElementById('majorKeyword').addEventListener('input',renderCatalog);
+    schoolSelect.addEventListener('change',renderCatalog);
+    document.getElementById('majorType').addEventListener('change',renderCatalog);
+    document.getElementById('majorReset').addEventListener('click',() => {
+      document.getElementById('majorKeyword').value='';
+      schoolSelect.value='';
+      document.getElementById('majorType').value='';
+      renderCatalog();
+    });
+    document.getElementById('majorCatalog').addEventListener('click',event => {
+      const button = event.target.closest('[data-major-record]');
+      if (button) openMajorDetail(button.dataset.majorRecord);
+    });
+    document.getElementById('majorModalClose').addEventListener('click',closeMajorDetail);
+    modal.addEventListener('click',event => { if(event.target === modal) closeMajorDetail(); });
+    document.addEventListener('keydown',event => { if(event.key === 'Escape') closeMajorDetail(); });
+  }
+  function majorCard(record) {
+    return '<article class="major-card"><span class="tag tag-'+escapeHtml(record.item.type)+'">'+escapeHtml(record.item.typeName)+'</span><span class="tag tag-focus">'+escapeHtml(record.profile.category || '专业资料')+'</span><h3>'+escapeHtml(record.major)+'</h3><p><strong>'+escapeHtml(record.item.school)+'</strong> · '+escapeHtml(record.profile.intro)+'</p><div class="major-card-actions"><button class="btn btn-primary btn-small" type="button" data-major-record="'+escapeHtml(record.id)+'">查看专业资料</button>'+(record.item.officialUrl?'<a class="btn btn-secondary btn-small" href="'+escapeHtml(record.item.officialUrl)+'" target="_blank" rel="noopener noreferrer">官方招生页 ↗</a>':'')+'</div></article>';
+  }
+  function renderCatalog() {
+    const box = document.getElementById('majorCatalog');
+    if (!box) return;
+    const keyword = (document.getElementById('majorKeyword').value || '').trim().toLowerCase();
+    const school = document.getElementById('majorSchool').value;
+    const type = document.getElementById('majorType').value;
+    const records = getRecords().filter(record => !school || record.item.school === school).filter(record => !type || record.item.type === type).filter(record => !keyword || (record.major + ' ' + record.item.school + ' ' + record.profile.intro + ' ' + record.profile.employment).toLowerCase().includes(keyword));
+    document.getElementById('majorTabCount').textContent = getRecords().length;
+    if (!records.length) { box.innerHTML = '<div class="empty-state"><span class="empty-icon">📚</span><strong>没有找到匹配的专业资料</strong><br>请更换院校、类型或关键词。</div>'; return; }
+    box.innerHTML = '<div class="result-summary"><span>共找到 <strong>'+records.length+'</strong> 条专业资料</span><span>专业资料可与院校对比一起使用</span></div><div class="major-grid">'+records.map(majorCard).join('')+'</div>';
+  }
+  function sourceLinks(record) {
+    const employmentUrl = getEmploymentUrl(record.item);
+    const examUrl = examSources[record.item.type] || '';
+    return '<div class="major-source-links">'+(record.item.officialUrl?'<a class="btn btn-secondary btn-small" href="'+escapeHtml(record.item.officialUrl)+'" target="_blank" rel="noopener noreferrer">学校招生入口 ↗</a>':'')+(examUrl?'<a class="btn btn-secondary btn-small" href="'+escapeHtml(examUrl)+'" target="_blank" rel="noopener noreferrer">考试大纲/安排 ↗</a>':'')+(employmentUrl?'<a class="btn btn-secondary btn-small" href="'+escapeHtml(employmentUrl)+'" target="_blank" rel="noopener noreferrer">就业质量报告入口 ↗</a>':'')+'</div>';
+  }
+  function openMajorDetail(recordId) {
+    const record = getRecords().find(item => item.id === recordId);
+    if (!record) return;
+    document.getElementById('majorModalTitle').textContent = record.major + ' · 专业资料';
+    document.getElementById('majorModalSubtitle').textContent = record.item.school + ' · ' + record.item.typeName;
+    document.getElementById('majorModalBody').innerHTML = '<div class="major-section"><h4>专业介绍</h4><p>'+escapeHtml(record.profile.intro)+'</p></div><div class="major-section"><h4>主要课程</h4><p>'+escapeHtml(record.profile.courses)+'</p></div><div class="major-section"><h4>就业方向</h4><p>'+escapeHtml(record.profile.employment)+'</p></div><div class="major-section"><h4>考试重点与科目</h4><p>'+escapeHtml(record.profile.examFocus)+'</p><p class="muted">学校通常不会公开所谓内部划重点；此处是通用复习方向，最终以省考试院大纲、课程大纲和学校通知为准。</p></div><div class="major-section"><h4>毕业与学位</h4><p>'+escapeHtml(record.profile.degreeNote)+'</p></div>'+sourceLinks(record);
+    document.getElementById('majorModal').classList.add('show');
+  }
+  function closeMajorDetail(){ document.getElementById('majorModal').classList.remove('show'); }
+  function decorateCards(selector) {
+    document.querySelectorAll(selector + ' .result-card').forEach(card => {
+      if (card.querySelector('[data-major-id]')) return;
+      const favoriteButton = card.querySelector('[data-favorite-id]') || card.querySelector('[data-remove-favorite]');
+      if (!favoriteButton) return;
+      const id = favoriteButton.dataset.favoriteId || favoriteButton.dataset.removeFavorite;
+      const button = document.createElement('button');
+      button.type='button'; button.className='btn btn-small btn-secondary'; button.dataset.majorId=id; button.textContent='专业资料';
+      favoriteButton.parentNode.insertBefore(button,favoriteButton);
+    });
+  }
+  function bindMajorEvents() {
+    document.getElementById('resultBox').addEventListener('click',event => { const button=event.target.closest('[data-major-id]'); if(button) openMajorDetailByItemId(button.dataset.majorId); });
+    document.getElementById('favoriteList').addEventListener('click',event => { const button=event.target.closest('[data-major-id]'); if(button) openMajorDetailByItemId(button.dataset.majorId); });
+  }
+  function openMajorDetailByItemId(itemId) {
+    const first = getRecords().find(record => getItemId(record.item) === itemId);
+    if (!first) return;
+    const majors = getRecords().filter(record => getItemId(record.item) === itemId);
+    if (majors.length === 1) { openMajorDetail(first.id); return; }
+    document.getElementById('majorModalTitle').textContent = first.item.school + ' · 专业资料';
+    document.getElementById('majorModalSubtitle').textContent = first.item.typeName + ' · 该条记录包含多个招生方向';
+    document.getElementById('majorModalBody').innerHTML = majors.map(record => '<div class="major-section"><h4>'+escapeHtml(record.major)+'</h4><p>'+escapeHtml(record.profile.intro)+'</p><p><strong>就业：</strong>'+escapeHtml(record.profile.employment)+'</p><p><strong>考试：</strong>'+escapeHtml(record.profile.examFocus)+'</p></div>').join('')+sourceLinks(first);
+    document.getElementById('majorModal').classList.add('show');
+  }
+  function initMajorCenter() {
+    ensureMajorPage();
+    const baseResults = renderResults;
+    renderResults = function(){ baseResults(); decorateCards('#resultBox'); };
+    const baseFavorites = renderFavorites;
+    renderFavorites = function(){ baseFavorites(); decorateCards('#favoriteList'); };
+    bindMajorEvents();
+    renderCatalog();
+    renderResults();
+    renderFavorites();
+  }
+  document.addEventListener('DOMContentLoaded',initMajorCenter);
+})();
+</script>
+</body>
+</html>
