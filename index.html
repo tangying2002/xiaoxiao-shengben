@@ -1033,5 +1033,133 @@ window.MAJOR_PROFILES = {"meta":{"generatedAt":"2026-09-16","notice":"专业介�
   document.addEventListener('DOMContentLoaded',initMajorCenter);
 })();
 </script>
+<script id="mobile-app-script">
+(() => {
+  "use strict";
+  const MOBILE_WIDTH = 760;
+  const navItems = [
+    {page:'searchPage',label:'首页',icon:'⌂'},
+    {page:'schoolComparePage',label:'对比',icon:'⇄'},
+    {page:'majorPage',label:'资料',icon:'▤'},
+    {page:'collectPage',label:'收藏',icon:'☆'},
+    {page:'mobileToolsPage',label:'工具',icon:'☰'}
+  ];
+  function ensureViewport(){
+    const meta=document.querySelector('meta[name="viewport"]');
+    if(meta) meta.setAttribute('content','width=device-width, initial-scale=1.0, viewport-fit=cover');
+  }
+  function ensureMobileStyle(){
+    if(document.getElementById('mobile-app-style')) return;
+    const style=document.createElement('style');
+    style.id='mobile-app-style';
+    style.textContent=`
+      .mobile-bottom-nav{display:none}
+      .mobile-tools-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+      .mobile-tool-card{display:flex;flex-direction:column;gap:4px;min-height:104px;padding:15px;border:1px solid var(--line);border-radius:14px;background:#fff;color:var(--text);text-decoration:none;text-align:left}
+      .mobile-tool-card strong{font-size:16px}
+      .mobile-tool-card span{font-size:12px;color:var(--muted);line-height:1.5}
+      .mobile-tool-icon{font-size:24px}
+      .mobile-app-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.15);font-size:11px;margin-bottom:6px}
+      @media(max-width:${MOBILE_WIDTH}px){
+        html{background:#eef3fa}
+        body{padding:0 0 calc(82px + env(safe-area-inset-bottom))!important;background:#eef3fa}
+        .container{max-width:none}
+        .hero{padding:calc(14px + env(safe-area-inset-top)) 16px 16px;margin:0 0 10px;border-radius:0 0 20px 20px}
+        .hero::after{width:150px;height:150px;right:-55px;top:-65px;border-width:26px}
+        .hero-kicker{font-size:11px;margin-bottom:8px}
+        .hero h1{font-size:23px;margin-bottom:5px}
+        .hero p{font-size:13px;line-height:1.55}
+        .data-note{margin-top:12px;padding:9px 10px;font-size:11px;line-height:1.5}
+        .nav-tabs{display:none!important}
+        .card{margin:10px;padding:15px;border-radius:15px;box-shadow:0 6px 18px rgba(28,50,86,.07)}
+        .section-head{margin-bottom:12px}
+        .card h2{font-size:18px}
+        .controls{display:grid;grid-template-columns:1fr;gap:10px}
+        .control-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+        .field label{font-size:12px}
+        input,select{min-height:46px;font-size:16px}
+        .result-summary{padding:11px 12px;font-size:12px}
+        .result-card{padding:15px;border-radius:14px}
+        .result-card-head{flex-direction:column;gap:10px}
+        .school-name{font-size:17px;margin-top:4px}
+        .card-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;gap:7px}
+        .card-actions .btn{width:100%;min-height:42px;padding:8px 6px;font-size:12px}
+        .meta-row{font-size:13px;gap:7px}
+        .official-note{font-size:11px;line-height:1.5}
+        .table-wrap{margin:0 -5px;border-radius:10px}
+        .check-item{padding:12px 2px;font-size:14px}
+        .check-item input{width:22px;height:22px;min-height:22px}
+        .countdown-grid{grid-template-columns:1fr 1fr}
+        .date-settings{grid-template-columns:1fr}
+        .date-actions{display:grid;grid-template-columns:1fr}
+        .major-toolbar{grid-template-columns:1fr}
+        .major-grid{grid-template-columns:1fr}
+        .major-card{padding:15px}
+        .major-card-actions{display:grid;grid-template-columns:1fr 1fr}
+        .major-card-actions .btn{width:100%}
+        .major-modal{padding:0;align-items:flex-end;background:rgba(12,25,46,.5)}
+        .major-modal-panel{max-height:92vh;overflow:auto;border-radius:20px 20px 0 0;padding:18px 16px calc(22px + env(safe-area-inset-bottom))}
+        .mobile-bottom-nav{position:fixed;z-index:9990;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(5,1fr);padding:7px 6px calc(7px + env(safe-area-inset-bottom));background:rgba(255,255,255,.96);border-top:1px solid #dfe7f1;box-shadow:0 -8px 24px rgba(25,48,80,.10);backdrop-filter:blur(14px)}
+        .mobile-nav-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-height:52px;border:0;background:transparent;color:#728096;font-size:11px;border-radius:11px;padding:3px 2px}
+        .mobile-nav-item .mobile-nav-icon{font-size:21px;line-height:1.05}
+        .mobile-nav-item.active{color:#24539a;background:#ecf3fc;font-weight:700}
+        .mobile-nav-item.active .mobile-nav-icon{transform:translateY(-1px)}
+        footer{margin:6px 10px 12px;font-size:11px;line-height:1.7}
+      }
+      @media(max-width:390px){.mobile-tools-grid{grid-template-columns:1fr}.countdown-grid{grid-template-columns:1fr}}
+    `;
+    document.head.appendChild(style);
+  }
+  function ensureToolsPage(){
+    if(document.getElementById('mobileToolsPage')) return;
+    const searchPage=document.getElementById('searchPage');
+    if(!searchPage) return;
+    const section=document.createElement('section');
+    section.id='mobileToolsPage';
+    section.className='page';
+    section.innerHTML=`
+      <div class="card">
+        <div class="section-head"><div><h2>学习工具</h2><p>常用报考资料与考试提醒集中在这里。</p></div></div>
+        <div class="mobile-tools-grid">
+          <button class="mobile-tool-card" type="button" data-mobile-page="comparePage"><span class="mobile-tool-icon">⇄</span><strong>自考 VS 成考</strong><span>查看两种报考方式的详细区别</span></button>
+          <button class="mobile-tool-card" type="button" data-mobile-page="materialPage"><span class="mobile-tool-icon">☑</span><strong>材料清单</strong><span>逐项准备身份证、毕业证和执业材料</span></button>
+          <button class="mobile-tool-card" type="button" data-mobile-page="countPage"><span class="mobile-tool-icon">⏰</span><strong>考试倒计时</strong><span>查看下一次考试并设置参考日期</span></button>
+          <button class="mobile-tool-card" type="button" data-mobile-page="collectPage"><span class="mobile-tool-icon">⭐</span><strong>我的收藏</strong><span>查看已收藏的院校和专业信息</span></button>
+        </div>
+      </div>
+    `;
+    searchPage.insertAdjacentElement('afterend',section);
+  }
+  function ensureBottomNav(){
+    if(document.getElementById('mobileBottomNav')) return;
+    const nav=document.createElement('nav');
+    nav.id='mobileBottomNav';
+    nav.className='mobile-bottom-nav';
+    nav.setAttribute('aria-label','手机端主导航');
+    nav.innerHTML=navItems.map(item=>'<button class="mobile-nav-item'+(item.page==='searchPage'?' active':'')+'" type="button" data-mobile-page="'+item.page+'"><span class="mobile-nav-icon">'+item.icon+'</span><span>'+item.label+'</span></button>').join('');
+    document.body.appendChild(nav);
+    nav.addEventListener('click',event=>{const button=event.target.closest('[data-mobile-page]');if(!button)return;switchPage(button.dataset.mobilePage,button);});
+  }
+  function updateMobileNav(pageId){
+    document.querySelectorAll('#mobileBottomNav .mobile-nav-item').forEach(button=>button.classList.toggle('active',button.dataset.mobilePage===pageId));
+  }
+  function bindTools(){
+    const tools=document.getElementById('mobileToolsPage');
+    if(!tools) return;
+    tools.addEventListener('click',event=>{const button=event.target.closest('[data-mobile-page]');if(!button)return;const target=button.dataset.mobilePage;switchPage(target);updateMobileNav(target);});
+  }
+  function initMobileApp(){
+    ensureViewport();
+    ensureMobileStyle();
+    ensureToolsPage();
+    ensureBottomNav();
+    const baseSwitchPage=switchPage;
+    switchPage=function(pageId,button){baseSwitchPage(pageId,button);updateMobileNav(pageId);};
+    bindTools();
+    updateMobileNav('searchPage');
+  }
+  document.addEventListener('DOMContentLoaded',initMobileApp);
+})();
+</script>
 </body>
 </html>
